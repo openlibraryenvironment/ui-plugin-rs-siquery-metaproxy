@@ -1,0 +1,40 @@
+{
+  "name": "@projectreshare/plugin-rs-siquery-metaproxy",
+  "version": "0.0.1",
+  "description": "Plugin to find an instance from an SI via Metaproxy",
+  "main": "src/index.js",
+  "license": "Apache-2.0",
+  "stripes": {
+    "actsAs": [
+      "plugin"
+    ],
+    "pluginType": "rs-siquery",
+    "displayName": "ui-plugin-rs-siquery-metaproxy.meta.title"
+  },
+  "scripts": {
+    "lint": "eslint ."
+  },
+  "devDependencies": {
+    "@folio/eslint-config-stripes": "~7.0.0",
+    "eslint": "^7.32.0"
+  },
+  "dependencies": {
+    "@projectreshare/stripes-reshare": "^1.11.0",
+    "ky": "^0.23.0",
+    "query-string": "^8.1.0",
+    "@k-int/stripes-kint-components": "^5.4.0"
+  },
+  "resolutions": {
+        "@rehooks/local-storage": "2.4.4",
+        "postcss-nesting" : "^10.0.0"
+  },
+  "peerDependencies": {
+    "@folio/stripes": "^7.1.0 || ^8.0.0 || ^9.0.0",
+    "react": "*",
+    "react-intl": "^6.0.0",
+    "react-query": "^3.9.0"
+  },
+  "resolve" : {
+    "fallback": { "timers": false }
+  }
+}
