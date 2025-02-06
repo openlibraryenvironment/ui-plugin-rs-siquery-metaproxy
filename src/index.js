@@ -11,9 +11,6 @@ import { useIntlCallout } from '@projectreshare/stripes-reshare';
 import SearchAndFilter from './components/SearchAndFilter';
 import css from './index.css';
 
-//const metaProxyUrl = "http://reshare-mp.folio-dev.indexdata.com:9000";
-//const metaProxyUrl = "http://localhost:8010/proxy";
-
 
 const PER_PAGE = 60;
 
@@ -117,7 +114,7 @@ const PluginRsSIQueryMetaproxy = ({
       "startRecord" : ((pageParam - 1) * PER_PAGE) + 1
     };
     const queryUrl = `${metaproxyUrl}/?${queryString.stringify(queryParams)}`;
-    console.log(queryUrl);
+    //console.log(queryUrl);
     const res = await ky(queryUrl);
     const text = await res.text();
     return text;
@@ -169,7 +166,7 @@ const PluginRsSIQueryMetaproxy = ({
       "x-password" : xPassword
     };
     const queryUrl = `${metaproxyUrl}/?${queryString.stringify(queryParams)}`;
-    console.log(queryUrl);
+    //console.log(queryUrl);
     const res = await ky(queryUrl)
       .catch(async e => {
         const errBody = await e.response?.text();
@@ -179,13 +176,13 @@ const PluginRsSIQueryMetaproxy = ({
     console.dir(res);
     
 
-    if (res?.statusText == 'OK') {
+    if (res?.ok == true) {
       let text = await res.text();
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(text, "application/xml");
       let recs = getRecordsFromXMLResponse(xmlDoc);
       let nextRec = recs[0];
-      console.dir(nextRec);
+      //console.dir(nextRec);
       let reshareObject = marcxmlToReshareForm(nextRec);
       selectInstance(reshareObject);
     }
