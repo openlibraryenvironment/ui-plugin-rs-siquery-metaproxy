@@ -23,6 +23,7 @@ const marcxmlToReshareForm = rec => {
   let publisherPlaceVal = getDataByTagAndSubfield(rec, "264", "a")?.trim();
   let publisherDateVal = getDataByTagAndSubfield(rec, "264", "c")?.trim();
   let uniqueIdentifier = getDatabyControlfield(rec, "001")?.trim();
+  let isbnVal = getDataByTagAndSubfield(rec, "020", "a")?.trim();
 
   let res = {
       title: titleVal,
@@ -30,7 +31,8 @@ const marcxmlToReshareForm = rec => {
       publisher: publisherVal,
       publicationDate: publisherDateVal,
       placeOfPublication: publisherPlaceVal,
-      systemInstanceIdentifier: uniqueIdentifier
+      systemInstanceIdentifier: uniqueIdentifier,
+      isbn: isbnVal
   };
 
   // exclude fields without truthy value such as those containing an empty string
@@ -52,8 +54,10 @@ const getRecordsFromXMLResponse = doc => {
 
 const getDataByTagAndSubfield = (rec, tagName, subField, sep=" ") => {
   let nodeList = rec.getElementsByTagName("datafield");
+  let res = null;
   for (const element of nodeList ) {
     if (element.getAttribute("tag") == tagName) {
+      //console.log(`Found element ${element} with tag ${tagName}`);
       if (subField) {
         const subFieldValueList = [];
         if (!Array.isArray(subField)) {
@@ -63,16 +67,21 @@ const getDataByTagAndSubfield = (rec, tagName, subField, sep=" ") => {
           let subfieldNodeList = element.getElementsByTagName("subfield");
           for (const subelement of subfieldNodeList) {
             if (subelement.getAttribute("code") == sub) {
-              subFieldValueList.push(subelement?.textContent)
+              let subVal = subelement?.textContent;
+              //console.log(`Found value of subelement ${sub}, '${subVal}'`);
+              subFieldValueList.push(subVal);
             }
           }
         }
-        return subFieldValueList.join(sep);
+        res = subFieldValueList.join(sep);
       } else {
-        return element?.textContent;
+        res = element?.textContent;
       }
+      break;
     }
   }
+  //console.log(`Got ${res} for tagName=${tagName}, subField=${subField}`);
+  return res;
 }
 
 const getDatabyControlfield = (rec, tagName) => {
@@ -173,7 +182,7 @@ const PluginRsSIQueryMetaproxy = ({
         const errMsg = (typeof errBody === 'string' && errBody.startsWith('{')) ? JSON.parse(errBody)?.statusMessage : '';
         sendCallout('ui-plugin-rs-metaproxy.byIdError', 'error', { errMsg });
       });
-    console.dir(res);
+    //console.dir(res);
     
 
     if (res?.ok == true) {
@@ -184,6 +193,7 @@ const PluginRsSIQueryMetaproxy = ({
       let nextRec = recs[0];
       //console.dir(nextRec);
       let reshareObject = marcxmlToReshareForm(nextRec);
+      //console.dir(reshareObject);
       selectInstance(reshareObject);
     }
   };
@@ -231,7 +241,7 @@ const PluginRsSIQueryMetaproxy = ({
                 columnMapping={{
                   title: <FormattedMessage id="ui-plugin-rs-siquery-metaproxy.columns.title" />,
                   author: <FormattedMessage id="ui-plugin-rs-siquery-metaproxy.columns.author" />,
-                  publicationDate: <FormattedMessage id="ui-plugin-rs-siquery-metaproxy.columns.publicationDate" />,
+                  publicationDate: <FormattedMessage id="ui-plugin-rs-siquery-metaproxy.columns.publicationDate" />
                 }}
                 contentData={results}
                 hasMargin
