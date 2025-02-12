@@ -53,31 +53,33 @@ const getRecordsFromXMLResponse = doc => {
 }
 
 const getDataByTagAndSubfield = (rec, tagName, subField, sep=" ") => {
-  let nodeList = rec.getElementsByTagName("datafield");
   let res = null;
-  for (const element of nodeList ) {
-    if (element.getAttribute("tag") == tagName) {
-      //console.log(`Found element ${element} with tag ${tagName}`);
-      if (subField) {
-        const subFieldValueList = [];
-        if (!Array.isArray(subField)) {
-          subField = [ subField ];
-        }
-        for ( const sub of subField ) {
-          let subfieldNodeList = element.getElementsByTagName("subfield");
-          for (const subelement of subfieldNodeList) {
-            if (subelement.getAttribute("code") == sub) {
-              let subVal = subelement?.textContent;
-              //console.log(`Found value of subelement ${sub}, '${subVal}'`);
-              subFieldValueList.push(subVal);
+  if (rec) {
+    let nodeList = rec.getElementsByTagName("datafield");
+    for (const element of nodeList ) {
+      if (element.getAttribute("tag") == tagName) {
+        //console.log(`Found element ${element} with tag ${tagName}`);
+        if (subField) {
+          const subFieldValueList = [];
+          if (!Array.isArray(subField)) {
+            subField = [ subField ];
+          }
+          for ( const sub of subField ) {
+            let subfieldNodeList = element.getElementsByTagName("subfield");
+            for (const subelement of subfieldNodeList) {
+              if (subelement.getAttribute("code") == sub) {
+                let subVal = subelement?.textContent;
+                //console.log(`Found value of subelement ${sub}, '${subVal}'`);
+                subFieldValueList.push(subVal);
+              }
             }
           }
+          res = subFieldValueList.join(sep);
+        } else {
+          res = element?.textContent;
         }
-        res = subFieldValueList.join(sep);
-      } else {
-        res = element?.textContent;
+        break;
       }
-      break;
     }
   }
   //console.log(`Got ${res} for tagName=${tagName}, subField=${subField}`);
@@ -106,15 +108,15 @@ const getTotalRecordCount = (xmlDoc) => {
 }
 
 const PluginRsSIQueryMetaproxy = ({ 
-  disabled, endpoint, selectInstance, searchButtonStyle, searchLabel, specifiedId,
-  xPassword, xUsername, metaproxyUrl }) => {
+  disabled, selectInstance, searchButtonStyle, searchLabel, specifiedId,
+  xPassword, xUsername, metaproxyUrl, zTarget }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchParams, setSearchParams] = useState('');
   const sendCallout = useIntlCallout();
 
   const queryFunc = async ({ pageParam = 1 }) => { 
     const queryParams = {
-      "x-target" : `${endpoint}`,
+      "x-target" : `${zTarget}`,
       "x-pquery" : searchParams["x-pquery"],
       "maximumRecords" : PER_PAGE,
       "recordSchema" : "marcxml",
@@ -167,7 +169,7 @@ const PluginRsSIQueryMetaproxy = ({
     }
 
     const queryParams = {
-      "x-target" : endpoint,
+      "x-target" : zTarget,
       "x-pquery" : `@attr 1=12 ${specifiedId}`,
       "maximumRecords" : 1,
       "recordSchema" : "marcxml",
@@ -175,7 +177,7 @@ const PluginRsSIQueryMetaproxy = ({
       "x-password" : xPassword
     };
     const queryUrl = `${metaproxyUrl}/?${queryString.stringify(queryParams)}`;
-    //console.log(queryUrl);
+    console.log(queryUrl);
     const res = await ky(queryUrl)
       .catch(async e => {
         const errBody = await e.response?.text();
@@ -192,9 +194,13 @@ const PluginRsSIQueryMetaproxy = ({
       let recs = getRecordsFromXMLResponse(xmlDoc);
       let nextRec = recs[0];
       //console.dir(nextRec);
-      let reshareObject = marcxmlToReshareForm(nextRec);
-      //console.dir(reshareObject);
-      selectInstance(reshareObject);
+      if (nextRec) {
+        let reshareObject = marcxmlToReshareForm(nextRec);
+        //console.dir(reshareObject);
+        selectInstance(reshareObject);
+      } else {
+        console.error(`Unable to retrieve record from endpoint ${zTarget} with proxy ${metaproxyUrl} and identifier ${specifiedId}`);
+      }
     }
   };
 
