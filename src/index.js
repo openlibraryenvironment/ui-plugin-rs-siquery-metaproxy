@@ -111,6 +111,7 @@ const PluginRsSIQueryMetaproxy = ({
   disabled, selectInstance, searchButtonStyle, searchLabel, specifiedId,
   xPassword, xUsername, metaproxyUrl, zTarget }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [autoRetrieved, setAutoRetrieved] = useState(false);
   const [searchParams, setSearchParams] = useState('');
   const sendCallout = useIntlCallout();
 
@@ -208,6 +209,11 @@ const PluginRsSIQueryMetaproxy = ({
     selectInstance(record);
     setIsOpen(false);
   };
+  
+  if(!autoRetrieved && specifiedId) {
+    setAutoRetrieved(true);
+    onButton();
+  }
 
   return (
     <>
