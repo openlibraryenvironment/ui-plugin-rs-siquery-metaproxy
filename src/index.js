@@ -210,6 +210,7 @@ const PluginRsSIQueryMetaproxy = ({
     setIsOpen(false);
   };
   
+  //Attempt to auto-lookup values if we have been given the specifiedId
   if(!autoRetrieved && specifiedId) {
     setAutoRetrieved(true);
     onButton();
