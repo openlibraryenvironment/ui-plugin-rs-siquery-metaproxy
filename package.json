@@ -1,6 +1,6 @@
 {
   "name": "@projectreshare/plugin-rs-siquery-metaproxy",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Plugin to find an instance from an SI via Metaproxy",
   "main": "src/index.js",
   "license": "Apache-2.0",
