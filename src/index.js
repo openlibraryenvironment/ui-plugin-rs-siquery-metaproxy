@@ -3,13 +3,15 @@ import ky from 'ky';
 import queryString from 'query-string';
 import { useInfiniteQuery } from 'react-query';
 import { useState } from 'react';
-
+import { useOkapiKy } from '@folio/stripes/core';
 
 import { Button, LoadingPane, Modal, MultiColumnList, Pane, Paneset } from '@folio/stripes/components';
-import { useIntlCallout } from '@projectreshare/stripes-reshare';
+import { useIntlCallout, useOkapiQuery } from '@projectreshare/stripes-reshare';
 
 import SearchAndFilter from './components/SearchAndFilter';
 import css from './index.css';
+
+const okapiKy = useOkapiKy();
 
 
 const PER_PAGE = 60;
@@ -117,17 +119,19 @@ const PluginRsSIQueryMetaproxy = ({
 
   const queryFunc = async ({ pageParam = 1 }) => { 
     const queryParams = {
-      "x-target" : `${zTarget}`,
+      //"x-target" : `${zTarget}`,
       "x-pquery" : searchParams["x-pquery"],
       "maximumRecords" : PER_PAGE,
       "recordSchema" : "marcxml",
-      "x-username" : xUsername,
-      "x-password" : xPassword,
+      //"x-username" : xUsername,
+      //"x-password" : xPassword,
       "startRecord" : ((pageParam - 1) * PER_PAGE) + 1
     };
-    const queryUrl = `${metaproxyUrl}/?${queryString.stringify(queryParams)}`;
+    //const queryUrl = `${metaproxyUrl}/?${queryString.stringify(queryParams)}`;
+    const queryUrl = `anbd?${queryString.stringify(queryParams)}`;
     //console.log(queryUrl);
-    const res = await ky(queryUrl);
+    //const res = await ky(queryUrl);
+    const res = await okapiKy(queryUrl);
     const text = await res.text();
     return text;
   }
@@ -168,23 +172,29 @@ const PluginRsSIQueryMetaproxy = ({
       setIsOpen(true);
       return;
     }
+    
 
     const queryParams = {
-      "x-target" : zTarget,
+      //"x-target" : zTarget,
       "x-pquery" : `@attr 1=12 ${specifiedId}`,
       "maximumRecords" : 1,
       "recordSchema" : "marcxml",
-      "x-username" : xUsername,
-      "x-password" : xPassword
+      //"x-username" : xUsername,
+      //"x-password" : xPassword
     };
-    const queryUrl = `${metaproxyUrl}/?${queryString.stringify(queryParams)}`;
+    //const queryUrl = `${metaproxyUrl}/?${queryString.stringify(queryParams)}`;
+    const queryUrl = `anbd?${queryString.stringify(queryParams)}`;
     console.log(queryUrl);
-    const res = await ky(queryUrl)
+    //const res = await ky(queryUrl)
+    const res = await okapiKy(queryUrl)
       .catch(async e => {
         const errBody = await e.response?.text();
         const errMsg = (typeof errBody === 'string' && errBody.startsWith('{')) ? JSON.parse(errBody)?.statusMessage : '';
         sendCallout('ui-plugin-rs-metaproxy.byIdError', 'error', { errMsg });
       });
+    
+
+
     //console.dir(res);
     
 
