@@ -50,8 +50,8 @@ const getReshareRecordsFromSet = recs => {
 }
 
 const getRecordsFromXMLResponse = doc => {
-  //Should we be using getElementsByTagNameNS?
-  return doc.getElementsByTagName("record");
+  const namespaceURI = doc?.documentElement?.namespaceURI;
+  return doc.getElementsByTagNameNS(namespaceURI, "record");
 }
 
 const getDataByTagAndSubfield = (rec, tagName, subField, sep=" ") => {
@@ -60,7 +60,6 @@ const getDataByTagAndSubfield = (rec, tagName, subField, sep=" ") => {
     let nodeList = rec.getElementsByTagName("datafield");
     for (const element of nodeList ) {
       if (element.getAttribute("tag") == tagName) {
-        //console.log(`Found element ${element} with tag ${tagName}`);
         if (subField) {
           const subFieldValueList = [];
           if (!Array.isArray(subField)) {
@@ -71,7 +70,6 @@ const getDataByTagAndSubfield = (rec, tagName, subField, sep=" ") => {
             for (const subelement of subfieldNodeList) {
               if (subelement.getAttribute("code") == sub) {
                 let subVal = subelement?.textContent;
-                //console.log(`Found value of subelement ${sub}, '${subVal}'`);
                 subFieldValueList.push(subVal);
               }
             }
@@ -84,7 +82,6 @@ const getDataByTagAndSubfield = (rec, tagName, subField, sep=" ") => {
       }
     }
   }
-  //console.log(`Got ${res} for tagName=${tagName}, subField=${subField}`);
   return res;
 }
 
@@ -119,18 +116,12 @@ const PluginRsSIQueryMetaproxy = ({
 
   const queryFunc = async ({ pageParam = 1 }) => { 
     const queryParams = {
-      //"x-target" : `${zTarget}`,
       "x-pquery" : searchParams["x-pquery"],
       "maximumRecords" : PER_PAGE,
       "recordSchema" : "marcxml",
-      //"x-username" : xUsername,
-      //"x-password" : xPassword,
       "startRecord" : ((pageParam - 1) * PER_PAGE) + 1
     };
-    //const queryUrl = `${metaproxyUrl}/?${queryString.stringify(queryParams)}`;
     const queryUrl = `anbd?${queryString.stringify(queryParams)}`;
-    //console.log(queryUrl);
-    //const res = await ky(queryUrl);
     const res = await okapiKy(queryUrl);
     const text = await res.text();
     return text;
@@ -175,12 +166,9 @@ const PluginRsSIQueryMetaproxy = ({
     
 
     const queryParams = {
-      //"x-target" : zTarget,
       "x-pquery" : `@attr 1=12 ${specifiedId}`,
       "maximumRecords" : 1,
       "recordSchema" : "marcxml",
-      //"x-username" : xUsername,
-      //"x-password" : xPassword
     };
     //const queryUrl = `${metaproxyUrl}/?${queryString.stringify(queryParams)}`;
     const queryUrl = `anbd?${queryString.stringify(queryParams)}`;
@@ -195,7 +183,7 @@ const PluginRsSIQueryMetaproxy = ({
     
 
 
-    //console.dir(res);
+    console.dir(res);
     
 
     if (res?.ok == true) {
@@ -204,10 +192,11 @@ const PluginRsSIQueryMetaproxy = ({
       const xmlDoc = parser.parseFromString(text, "application/xml");
       let recs = getRecordsFromXMLResponse(xmlDoc);
       let nextRec = recs[0];
-      //console.dir(nextRec);
+  
+      console.dir(nextRec);
       if (nextRec) {
         let reshareObject = marcxmlToReshareForm(nextRec);
-        //console.dir(reshareObject);
+        console.dir(reshareObject);
         selectInstance(reshareObject);
       } else {
         console.error(`Unable to retrieve record from endpoint ${zTarget} with proxy ${metaproxyUrl} and identifier ${specifiedId}`);
