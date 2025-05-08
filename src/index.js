@@ -215,6 +215,9 @@ const PluginRsSIQueryMetaproxy = ({
     onButton();
   }
 
+  // hide search button for now
+  if (!specifiedId && !disabled) return null;
+
   return (
     <>
       <Button
