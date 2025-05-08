@@ -172,7 +172,7 @@ const PluginRsSIQueryMetaproxy = ({
     };
     //const queryUrl = `${metaproxyUrl}/?${queryString.stringify(queryParams)}`;
     const queryUrl = `anbd?${queryString.stringify(queryParams)}`;
-    console.log(queryUrl);
+    //console.log(queryUrl);
     //const res = await ky(queryUrl)
     const res = await okapiKy(queryUrl)
       .catch(async e => {
@@ -183,7 +183,7 @@ const PluginRsSIQueryMetaproxy = ({
     
 
 
-    console.dir(res);
+    //console.dir(res);
     
 
     if (res?.ok == true) {
@@ -193,10 +193,10 @@ const PluginRsSIQueryMetaproxy = ({
       let recs = getRecordsFromXMLResponse(xmlDoc);
       let nextRec = recs[0];
   
-      console.dir(nextRec);
+      //console.dir(nextRec);
       if (nextRec) {
         let reshareObject = marcxmlToReshareForm(nextRec);
-        console.dir(reshareObject);
+        //console.dir(reshareObject);
         selectInstance(reshareObject);
       } else {
         console.error(`Unable to retrieve record from endpoint ${zTarget} with proxy ${metaproxyUrl} and identifier ${specifiedId}`);
@@ -259,7 +259,7 @@ const PluginRsSIQueryMetaproxy = ({
                 hasMargin
                 loading={query?.isFetching}
                 onNeedMoreData={(_ask, index) => { 
-                  console.log(`calling onNeedMoreData with index ${index}`);
+                  //console.log(`calling onNeedMoreData with index ${index}`);
                   query.fetchNextPage({ pageParam: Math.ceil(index / PER_PAGE) })
                 }}
                 onRowClick={(_e, row) => onSelect(row)}
