@@ -3,17 +3,15 @@ import ky from 'ky';
 import queryString from 'query-string';
 import { useInfiniteQuery } from 'react-query';
 import { useState } from 'react';
-
+import { useOkapiKy } from '@folio/stripes/core';
 
 import { Button, LoadingPane, Modal, MultiColumnList, Pane, Paneset } from '@folio/stripes/components';
-import { useIntlCallout } from '@projectreshare/stripes-reshare';
+import { useIntlCallout, useOkapiQuery } from '@projectreshare/stripes-reshare';
 
 import SearchAndFilter from './components/SearchAndFilter';
 import css from './index.css';
 
-
 const PER_PAGE = 60;
-
 
 //Turn a single marcxml record into a format reshare can use
 const marcxmlToReshareForm = rec => {
@@ -48,8 +46,8 @@ const getReshareRecordsFromSet = recs => {
 }
 
 const getRecordsFromXMLResponse = doc => {
-  //Should we be using getElementsByTagNameNS?
-  return doc.getElementsByTagName("record");
+  const namespaceURI = doc?.documentElement?.namespaceURI;
+  return doc.getElementsByTagNameNS(namespaceURI, "record");
 }
 
 const getDataByTagAndSubfield = (rec, tagName, subField, sep=" ") => {
@@ -58,7 +56,6 @@ const getDataByTagAndSubfield = (rec, tagName, subField, sep=" ") => {
     let nodeList = rec.getElementsByTagName("datafield");
     for (const element of nodeList ) {
       if (element.getAttribute("tag") == tagName) {
-        //console.log(`Found element ${element} with tag ${tagName}`);
         if (subField) {
           const subFieldValueList = [];
           if (!Array.isArray(subField)) {
@@ -69,7 +66,6 @@ const getDataByTagAndSubfield = (rec, tagName, subField, sep=" ") => {
             for (const subelement of subfieldNodeList) {
               if (subelement.getAttribute("code") == sub) {
                 let subVal = subelement?.textContent;
-                //console.log(`Found value of subelement ${sub}, '${subVal}'`);
                 subFieldValueList.push(subVal);
               }
             }
@@ -82,7 +78,6 @@ const getDataByTagAndSubfield = (rec, tagName, subField, sep=" ") => {
       }
     }
   }
-  //console.log(`Got ${res} for tagName=${tagName}, subField=${subField}`);
   return res;
 }
 
@@ -114,20 +109,17 @@ const PluginRsSIQueryMetaproxy = ({
   const [autoRetrieved, setAutoRetrieved] = useState(false);
   const [searchParams, setSearchParams] = useState('');
   const sendCallout = useIntlCallout();
+  const okapiKy = useOkapiKy();
 
   const queryFunc = async ({ pageParam = 1 }) => { 
     const queryParams = {
-      "x-target" : `${zTarget}`,
       "x-pquery" : searchParams["x-pquery"],
       "maximumRecords" : PER_PAGE,
       "recordSchema" : "marcxml",
-      "x-username" : xUsername,
-      "x-password" : xPassword,
       "startRecord" : ((pageParam - 1) * PER_PAGE) + 1
     };
-    const queryUrl = `${metaproxyUrl}/?${queryString.stringify(queryParams)}`;
-    //console.log(queryUrl);
-    const res = await ky(queryUrl);
+    const queryUrl = `anbd?${queryString.stringify(queryParams)}`;
+    const res = await okapiKy(queryUrl);
     const text = await res.text();
     return text;
   }
@@ -168,23 +160,26 @@ const PluginRsSIQueryMetaproxy = ({
       setIsOpen(true);
       return;
     }
+    
 
     const queryParams = {
-      "x-target" : zTarget,
       "x-pquery" : `@attr 1=12 ${specifiedId}`,
       "maximumRecords" : 1,
       "recordSchema" : "marcxml",
-      "x-username" : xUsername,
-      "x-password" : xPassword
     };
-    const queryUrl = `${metaproxyUrl}/?${queryString.stringify(queryParams)}`;
-    console.log(queryUrl);
-    const res = await ky(queryUrl)
+    //const queryUrl = `${metaproxyUrl}/?${queryString.stringify(queryParams)}`;
+    const queryUrl = `anbd?${queryString.stringify(queryParams)}`;
+    //console.log(queryUrl);
+    //const res = await ky(queryUrl)
+    const res = await okapiKy(queryUrl)
       .catch(async e => {
         const errBody = await e.response?.text();
         const errMsg = (typeof errBody === 'string' && errBody.startsWith('{')) ? JSON.parse(errBody)?.statusMessage : '';
         sendCallout('ui-plugin-rs-metaproxy.byIdError', 'error', { errMsg });
       });
+    
+
+
     //console.dir(res);
     
 
@@ -194,6 +189,7 @@ const PluginRsSIQueryMetaproxy = ({
       const xmlDoc = parser.parseFromString(text, "application/xml");
       let recs = getRecordsFromXMLResponse(xmlDoc);
       let nextRec = recs[0];
+  
       //console.dir(nextRec);
       if (nextRec) {
         let reshareObject = marcxmlToReshareForm(nextRec);
@@ -215,6 +211,9 @@ const PluginRsSIQueryMetaproxy = ({
     setAutoRetrieved(true);
     onButton();
   }
+
+  // hide search button for now
+  if (!specifiedId && !disabled) return null;
 
   return (
     <>
@@ -260,7 +259,7 @@ const PluginRsSIQueryMetaproxy = ({
                 hasMargin
                 loading={query?.isFetching}
                 onNeedMoreData={(_ask, index) => { 
-                  console.log(`calling onNeedMoreData with index ${index}`);
+                  //console.log(`calling onNeedMoreData with index ${index}`);
                   query.fetchNextPage({ pageParam: Math.ceil(index / PER_PAGE) })
                 }}
                 onRowClick={(_e, row) => onSelect(row)}
