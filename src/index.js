@@ -11,11 +11,7 @@ import { useIntlCallout, useOkapiQuery } from '@projectreshare/stripes-reshare';
 import SearchAndFilter from './components/SearchAndFilter';
 import css from './index.css';
 
-const okapiKy = useOkapiKy();
-
-
 const PER_PAGE = 60;
-
 
 //Turn a single marcxml record into a format reshare can use
 const marcxmlToReshareForm = rec => {
@@ -113,6 +109,7 @@ const PluginRsSIQueryMetaproxy = ({
   const [autoRetrieved, setAutoRetrieved] = useState(false);
   const [searchParams, setSearchParams] = useState('');
   const sendCallout = useIntlCallout();
+  const okapiKy = useOkapiKy();
 
   const queryFunc = async ({ pageParam = 1 }) => { 
     const queryParams = {
