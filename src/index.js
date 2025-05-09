@@ -103,7 +103,7 @@ const getTotalRecordCount = (xmlDoc) => {
 }
 
 const PluginRsSIQueryMetaproxy = ({ 
-  disabled, selectInstance, searchButtonStyle, searchLabel, specifiedId,
+  autopopulate, disabled, selectInstance, searchButtonStyle, searchLabel, specifiedId,
   xPassword, xUsername, metaproxyUrl, zTarget }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [autoRetrieved, setAutoRetrieved] = useState(false);
@@ -207,7 +207,7 @@ const PluginRsSIQueryMetaproxy = ({
   };
   
   //Attempt to auto-lookup values if we have been given the specifiedId
-  if(!autoRetrieved && specifiedId) {
+  if(!autoRetrieved && specifiedId && autopopulate) {
     setAutoRetrieved(true);
     onButton();
   }
