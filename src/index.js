@@ -148,7 +148,6 @@ const PluginRsSIQueryMetaproxy = ({
       if (resultXML) {
         const resultXMLDoc = new DOMParser().parseFromString(resultXML, "application/xml");
         if (resultXMLDoc) {
-          //console.dir(resultXMLDoc)
           const resultRecs = getRecordsFromXMLResponse(resultXMLDoc); 
           for ( const resultRec of getReshareRecordsFromSet(resultRecs)) {
             results.push(resultRec);
@@ -173,10 +172,8 @@ const PluginRsSIQueryMetaproxy = ({
       "maximumRecords" : 1,
       "recordSchema" : "marcxml",
     };
-    //const queryUrl = `${metaproxyUrl}/?${queryString.stringify(queryParams)}`;
     const queryUrl = `anbd?${queryString.stringify(queryParams)}`;
-    //console.log(queryUrl);
-    //const res = await ky(queryUrl)
+ 
     const res = await okapiKy(queryUrl)
       .catch(async e => {
         const errBody = await e.response?.text();
@@ -186,7 +183,6 @@ const PluginRsSIQueryMetaproxy = ({
     
 
 
-    //console.dir(res);
     
 
     if (res?.ok == true) {
@@ -196,13 +192,10 @@ const PluginRsSIQueryMetaproxy = ({
       let recs = getRecordsFromXMLResponse(xmlDoc);
       let nextRec = recs[0];
   
-      // console.dir(nextRec);
       if (nextRec) {
         const leaderVal = getLeaderValue(nextRec);
-        // console.log(`Got leader ${leaderVal}`);
         const reshareObject = marcxmlToReshareForm(nextRec);
         reshareObject['__leader__'] = leaderVal;
-        // console.dir(reshareObject);
         selectInstance(reshareObject);
       } else {
         console.error(`Unable to retrieve record from endpoint ${zTarget} with proxy ${metaproxyUrl} and identifier ${specifiedId}`);
