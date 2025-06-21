@@ -90,6 +90,11 @@ const getDatabyControlfield = (rec, tagName) => {
   }
 }
 
+const getLeaderValue = (rec) => {
+  const leader = rec.getElementsByTagName("leader")[0];
+  return leader?.textContent;
+}
+
 const getTotalRecordCount = (xmlDoc) => {
   let intVal = 0;
   try {
@@ -143,6 +148,7 @@ const PluginRsSIQueryMetaproxy = ({
       if (resultXML) {
         const resultXMLDoc = new DOMParser().parseFromString(resultXML, "application/xml");
         if (resultXMLDoc) {
+          //console.dir(resultXMLDoc)
           const resultRecs = getRecordsFromXMLResponse(resultXMLDoc); 
           for ( const resultRec of getReshareRecordsFromSet(resultRecs)) {
             results.push(resultRec);
@@ -190,10 +196,13 @@ const PluginRsSIQueryMetaproxy = ({
       let recs = getRecordsFromXMLResponse(xmlDoc);
       let nextRec = recs[0];
   
-      //console.dir(nextRec);
+      // console.dir(nextRec);
       if (nextRec) {
-        let reshareObject = marcxmlToReshareForm(nextRec);
-        //console.dir(reshareObject);
+        const leaderVal = getLeaderValue(nextRec);
+        // console.log(`Got leader ${leaderVal}`);
+        const reshareObject = marcxmlToReshareForm(nextRec);
+        reshareObject['__leader__'] = leaderVal;
+        // console.dir(reshareObject);
         selectInstance(reshareObject);
       } else {
         console.error(`Unable to retrieve record from endpoint ${zTarget} with proxy ${metaproxyUrl} and identifier ${specifiedId}`);
