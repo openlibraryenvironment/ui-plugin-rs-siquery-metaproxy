@@ -90,6 +90,11 @@ const getDatabyControlfield = (rec, tagName) => {
   }
 }
 
+const getLeaderValue = (rec) => {
+  const leader = rec.getElementsByTagName("leader")[0];
+  return leader?.textContent;
+}
+
 const getTotalRecordCount = (xmlDoc) => {
   let intVal = 0;
   try {
@@ -103,7 +108,7 @@ const getTotalRecordCount = (xmlDoc) => {
 }
 
 const PluginRsSIQueryMetaproxy = ({ 
-  disabled, selectInstance, searchButtonStyle, searchLabel, specifiedId,
+  autopopulate, disabled, selectInstance, searchButtonStyle, searchLabel, specifiedId,
   xPassword, xUsername, metaproxyUrl, zTarget }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [autoRetrieved, setAutoRetrieved] = useState(false);
@@ -167,10 +172,8 @@ const PluginRsSIQueryMetaproxy = ({
       "maximumRecords" : 1,
       "recordSchema" : "marcxml",
     };
-    //const queryUrl = `${metaproxyUrl}/?${queryString.stringify(queryParams)}`;
     const queryUrl = `anbd?${queryString.stringify(queryParams)}`;
-    //console.log(queryUrl);
-    //const res = await ky(queryUrl)
+ 
     const res = await okapiKy(queryUrl)
       .catch(async e => {
         const errBody = await e.response?.text();
@@ -180,7 +183,6 @@ const PluginRsSIQueryMetaproxy = ({
     
 
 
-    //console.dir(res);
     
 
     if (res?.ok == true) {
@@ -190,10 +192,10 @@ const PluginRsSIQueryMetaproxy = ({
       let recs = getRecordsFromXMLResponse(xmlDoc);
       let nextRec = recs[0];
   
-      //console.dir(nextRec);
       if (nextRec) {
-        let reshareObject = marcxmlToReshareForm(nextRec);
-        //console.dir(reshareObject);
+        const leaderVal = getLeaderValue(nextRec);
+        const reshareObject = marcxmlToReshareForm(nextRec);
+        reshareObject['__leader__'] = leaderVal;
         selectInstance(reshareObject);
       } else {
         console.error(`Unable to retrieve record from endpoint ${zTarget} with proxy ${metaproxyUrl} and identifier ${specifiedId}`);
@@ -207,7 +209,7 @@ const PluginRsSIQueryMetaproxy = ({
   };
   
   //Attempt to auto-lookup values if we have been given the specifiedId
-  if(!autoRetrieved && specifiedId) {
+  if(!autoRetrieved && specifiedId && autopopulate) {
     setAutoRetrieved(true);
     onButton();
   }
